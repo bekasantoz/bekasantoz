@@ -29,10 +29,6 @@
   </a>
   <a href="https://www.linkedin.com/in/rebekarbsantos" target="_blank">
     <img src="https://img.shields.io/badge/-LinkedIn-%230077B5?style=for-the-badge&logo=linkedin&logoColor=white">
-  </a>
-  <a href="snake.html" target="_blank">
-    <img src="https://img.shields.io/badge/-Snake%20Game-%23ff6347?style=for-the-badge&logo=unity&logoColor=white">
-  </a>
 </div>
 
 ---
