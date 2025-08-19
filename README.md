@@ -1,4 +1,4 @@
-## Oiii, tudo bem? Eu sou a Rebeka Santos! 🥰
+## Oiii, tudo bem? Eu sou a Rebeka! 🥰
 
 <div align="center">
   <a href="https://github.com/bekasantoz">
