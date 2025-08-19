@@ -1,6 +1,6 @@
 <div align="center" style="font-family: 'Arial', sans-serif; background-color:#f5f0e6; padding:40px; border-radius:16px; color:#5b3a29;">
 
-# Olá, eu sou a Rebeka Santos! 🥰
+# Olá, eu sou a Rebeka! 🥰
 
 <a href="https://github.com/bekasantoz">
   <img height="140em" src="https://github-readme-stats.vercel.app/api?username=bekasantoz&show_icons=true&theme=vue&include_all_commits=true&count_private=true"/>
