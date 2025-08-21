@@ -2,100 +2,403 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Jogo da Cobrinha</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pixel Snake - Jogo da Cobrinha</title>
 <style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
   body {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    background: #1e1e1e;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #6A11CB 0%, #2575FC 100%);
     color: #fff;
-    font-family: monospace;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px;
+    overflow: hidden;
   }
+  
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    max-width: 500px;
+    width: 100%;
+  }
+  
+  .header {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  
+  h1 {
+    font-size: 2.8rem;
+    margin-bottom: 5px;
+    color: #FFEB3B;
+    text-shadow: 3px 3px 0 #FF9800, 5px 5px 0 rgba(0,0,0,0.2);
+    letter-spacing: 2px;
+  }
+  
+  .score-container {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 12px 25px;
+    border-radius: 20px;
+    backdrop-filter: blur(5px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+  
+  .score {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #FFEB3B;
+  }
+  
+  .game-container {
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  
   canvas {
-    background: #111;
-    border: 4px solid #28a745;
-    border-radius: 8px;
+    background: #1A1A2E;
+    border: 6px solid #4CC9F0;
+    border-radius: 12px;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+  }
+  
+  .controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+  }
+  
+  .controls-info {
+    text-align: center;
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .buttons {
+    display: flex;
+    gap: 15px;
+  }
+  
+  button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: linear-gradient(to right, #FF416C, #FF4B2B);
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+  
+  button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+  }
+  
+  button:active {
+    transform: translateY(0);
+  }
+  
+  .footer {
+    margin-top: 20px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+  }
+  
+  /* Efeitos de partículas para o fundo */
+  .particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+  }
+  
+  .particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    animation: float 15s infinite linear;
+  }
+  
+  @keyframes float {
+    0% {
+      transform: translateY(0) translateX(0);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-100vh) translateX(100px);
+      opacity: 0;
+    }
+  }
+  
+  /* Responsividade */
+  @media (max-width: 500px) {
+    h1 {
+      font-size: 2rem;
+    }
+    
+    canvas {
+      width: 320px;
+      height: 320px;
+    }
+    
+    .score {
+      font-size: 1.5rem;
+    }
   }
 </style>
 </head>
 <body>
-<canvas id="game" width="400" height="400"></canvas>
-<script>
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
+  <div class="particles" id="particles"></div>
+  
+  <div class="container">
+    <div class="header">
+      <h1>PIXEL SNAKE</h1>
+      <div class="score-container">
+        Pontuação: <span class="score" id="score">0</span>
+      </div>
+    </div>
+    
+    <div class="game-container">
+      <canvas id="game" width="400" height="400"></canvas>
+    </div>
+    
+    <div class="controls">
+      <div class="controls-info">Use as setas do teclado para controlar a cobrinha</div>
+      <div class="buttons">
+        <button id="restart">Reiniciar</button>
+        <button id="pause">Pausar</button>
+      </div>
+    </div>
+    
+    <div class="footer">
+      Jogo desenvolvido com HTML5, CSS3 e JavaScript 
+    </div>
+  </div>
 
-const box = 20;
-let snake = [{x: 10*box, y: 10*box}];
-let direction = "RIGHT";
-let food = {
-    x: Math.floor(Math.random()*20) * box,
-    y: Math.floor(Math.random()*20) * box
-};
-let score = 0;
-
-document.addEventListener("keydown", move);
-
-function move(event) {
-    if(event.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
-    if(event.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
-    if(event.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
-    if(event.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
-}
-
-function draw() {
-    ctx.fillStyle = "#111";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-
-    for(let i=0; i<snake.length; i++){
-        ctx.fillStyle = `hsl(${i*20}, 80%, 50%)`;
-        ctx.fillRect(snake[i].x, snake[i].y, box, box);
+  <script>
+    // Configuração do canvas e contexto
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const scoreElement = document.getElementById('score');
+    const restartButton = document.getElementById('restart');
+    const pauseButton = document.getElementById('pause');
+    
+    // Configuração do jogo
+    const box = 20;
+    let snake = [];
+    let direction = "RIGHT";
+    let food = {};
+    let score = 0;
+    let game = null;
+    let isPaused = false;
+    
+    const colors = {
+      snakeHead: '#4CC9F0',
+      snakeBody: ['#F72585', '#7209B7', '#3A0CA3', '#4361EE'],
+      food: '#FFBE0B',
+      background: '#1A1A2E',
+      border: '#4CC9F0'
+    };
+    
+    // Inicialização do jogo
+    function initGame() {
+      snake = [{x: 10*box, y: 10*box}];
+      direction = "RIGHT";
+      generateFood();
+      score = 0;
+      scoreElement.textContent = score;
+      
+      if (game) clearInterval(game);
+      game = setInterval(draw, 150);
     }
-
-    ctx.fillStyle = "red";
-    ctx.fillRect(food.x, food.y, box, box);
-
-    let snakeX = snake[0].x;
-    let snakeY = snake[0].y;
-
-    if(direction === "LEFT") snakeX -= box;
-    if(direction === "UP") snakeY -= box;
-    if(direction === "RIGHT") snakeX += box;
-    if(direction === "DOWN") snakeY += box;
-
-    // Comer a comida
-    if(snakeX === food.x && snakeY === food.y){
-        score++;
-        food = {
-            x: Math.floor(Math.random()*20) * box,
-            y: Math.floor(Math.random()*20) * box
-        };
-    } else {
-        snake.pop();
+    
+    // Geração de partículas para o fundo
+    function createParticles() {
+      const particlesContainer = document.getElementById('particles');
+      particlesContainer.innerHTML = '';
+      
+      for (let i = 0; i < 50; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        particle.style.left = `${Math.random() * 100}%`;
+        particle.style.top = `${Math.random() * 100}%`;
+        particle.style.animationDuration = `${15 + Math.random() * 10}s`;
+        particle.style.animationDelay = `${Math.random() * 5}s`;
+        particle.style.backgroundColor = `hsl(${Math.random() * 360}, 70%, 65%)`;
+        particlesContainer.appendChild(particle);
+      }
     }
-
-    let newHead = {x: snakeX, y: snakeY};
-
-    // Colisão com paredes
-    if(snakeX < 0 || snakeX >= canvas.width || snakeY < 0 || snakeY >= canvas.height || collision(newHead, snake)){
-        clearInterval(game);
-        alert("Game Over! Pontuação: " + score);
+    
+    // Geração de comida em posição aleatória
+    function generateFood() {
+      food = {
+        x: Math.floor(Math.random()*20) * box,
+        y: Math.floor(Math.random()*20) * box
+      };
     }
-
-    snake.unshift(newHead);
-}
-
-function collision(head, array){
-    for(let i=0;i<array.length;i++){
-        if(head.x === array[i].x && head.y === array[i].y){
-            return true;
+    
+    // Detecção de teclas
+    document.addEventListener("keydown", (event) => {
+      if(isPaused) return;
+      
+      if(event.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
+      if(event.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
+      if(event.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
+      if(event.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+      
+      // Tecla espaço para pausar
+      if(event.key === " ") togglePause();
+    });
+    
+    // Desenhar o jogo
+    function draw() {
+      // Fundo do canvas
+      ctx.fillStyle = colors.background;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Desenhar a cobrinha
+      for(let i = 0; i < snake.length; i++){
+        if(i === 0) {
+          // Cabeça da cobrinha
+          ctx.fillStyle = colors.snakeHead;
+        } else {
+          // Corpo da cobrinha com cores alternadas
+          ctx.fillStyle = colors.snakeBody[i % colors.snakeBody.length];
         }
+        
+        // Efeito de pixel com borda
+        ctx.fillRect(snake[i].x, snake[i].y, box, box);
+        ctx.strokeStyle = '#1A1A2E';
+        ctx.strokeRect(snake[i].x, snake[i].y, box, box);
+      }
+      
+      // Desenhar a comida
+      ctx.fillStyle = colors.food;
+      ctx.beginPath();
+      const centerX = food.x + box/2;
+      const centerY = food.y + box/2;
+      ctx.arc(centerX, centerY, box/2, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Movimentação da cobrinha
+      let snakeX = snake[0].x;
+      let snakeY = snake[0].y;
+      
+      if(direction === "LEFT") snakeX -= box;
+      if(direction === "UP") snakeY -= box;
+      if(direction === "RIGHT") snakeX += box;
+      if(direction === "DOWN") snakeY += box;
+      
+      // Comer a comida
+      if(snakeX === food.x && snakeY === food.y){
+        score++;
+        scoreElement.textContent = score;
+        generateFood();
+      } else {
+        snake.pop();
+      }
+      
+      let newHead = {x: snakeX, y: snakeY};
+      
+      // Colisão com paredes ou com o próprio corpo
+      if(snakeX < 0 || snakeX >= canvas.width || snakeY < 0 || snakeY >= canvas.height || collision(newHead, snake)){
+        clearInterval(game);
+        showGameOver();
+      }
+      
+      snake.unshift(newHead);
     }
-    return false;
-}
-
-let game = setInterval(draw, 150);
-</script>
+    
+    // Verificar colisão
+    function collision(head, array) {
+      for(let i = 0; i < array.length; i++){
+        if(head.x === array[i].x && head.y === array[i].y){
+          return true;
+        }
+      }
+      return false;
+    }
+    
+    // Mostrar tela de game over
+    function showGameOver() {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      ctx.font = '30px "Press Start 2P", cursive, monospace';
+      ctx.fillStyle = '#FF5252';
+      ctx.textAlign = 'center';
+      ctx.fillText('GAME OVER', canvas.width/2, canvas.height/2 - 30);
+      
+      ctx.font = '20px "Press Start 2P", cursive, monospace';
+      ctx.fillStyle = '#4CC9F0';
+      ctx.fillText(`Pontuação: ${score}`, canvas.width/2, canvas.height/2 + 20);
+      
+      ctx.font = '16px "Press Start 2P", cursive, monospace';
+      ctx.fillStyle = '#F72585';
+      ctx.fillText('Clique em Reiniciar para jogar novamente', canvas.width/2, canvas.height/2 + 60);
+    }
+    
+    // Pausar o jogo
+    function togglePause() {
+      isPaused = !isPaused;
+      
+      if (isPaused) {
+        clearInterval(game);
+        pauseButton.textContent = "Continuar";
+        
+        // Mostrar texto de pausa
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.font = '30px "Press Start 2P", cursive, monospace';
+        ctx.fillStyle = '#4CC9F0';
+        ctx.textAlign = 'center';
+        ctx.fillText('JOGO PAUSADO', canvas.width/2, canvas.height/2);
+      } else {
+        game = setInterval(draw, 150);
+        pauseButton.textContent = "Pausar";
+      }
+    }
+    
+    // Event listeners para os botões
+    restartButton.addEventListener('click', initGame);
+    pauseButton.addEventListener('click', togglePause);
+    
+    // Inicializar o jogo e as partículas
+    window.onload = function() {
+      initGame();
+      createParticles();
+    };
+  </script>
 </body>
 </html>
