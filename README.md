@@ -34,6 +34,7 @@
 ---
 
 ## 🌟 Projetos em Destaque
+- https://bekasantoz.github.io/raniabeautyco/
 - https://bekasantoz.github.io/casa-aurea-site/
 - https://bekasantoz.github.io/pokemon/
 ---
